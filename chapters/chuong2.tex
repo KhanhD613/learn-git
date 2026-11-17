@@ -1,0 +1,130 @@
+\chapter{THIẾT KẾ GIẢI PHÁP VÀ PHÂN TÍCH MÃ NGUỒN}
+
+\section{Quy trình học máy tổng thể}
+
+Quy trình của nhóm tuân theo sơ đồ tổng quát trong hướng dẫn bài tập lớn (Lê Thị Thùy Trang, 2026), gồm các bước được thể hiện trong Sơ đồ~\ref{sd:quy-trinh}.
+
+\begin{sodo}[H]
+    \centering
+    \resizebox{\textwidth}{!}{%
+    \begin{tikzpicture}[>=latex,
+      box/.style={draw,rounded corners,align=center,minimum height=1.5cm,text width=2.1cm,font=\small,fill=blue!6}]
+      \node[box] (a) at (0,0) {Dữ liệu thô\\ (ảnh, CSV)};
+      \node[box] (b) at (2.5,0) {EDA};
+      \node[box] (c) at (5.0,0) {Tiền xử lý\\ ROI, xám,\\ $32{\times}32$, CLAHE};
+      \node[box] (d) at (7.5,0) {Đặc trưng\\ Pixel / HOG\\ / PCA};
+      \node[box] (e) at (10.0,0) {Huấn luyện\\ K-NN,\\ Cây quyết định};
+      \node[box] (f) at (12.5,0) {Đánh giá\\ Validation\\ rồi Test};
+      \node[box] (g) at (15.0,0) {Phân tích lỗi};
+      \foreach \x/\y in {a/b,b/c,c/d,d/e,e/f,f/g} \draw[->,thick] (\x) -- (\y);
+    \end{tikzpicture}}
+    \SodoCaption{Quy trình học máy của nhóm}{Nhóm tự xây dựng, theo hướng dẫn bài tập lớn}
+    \label{sd:quy-trinh}
+\end{sodo}
+
+\section{Tiền xử lý ảnh}
+
+Với mỗi ảnh, hàm \texttt{read\_gray\_roi} trong tệp \texttt{common.py} thực hiện lần lượt các bước sau:
+
+\begin{itemize}
+    \item Đọc ảnh ở dạng xám.
+    \item Cắt ảnh theo khung biển (ROI) cho trong tệp CSV.
+    \item Đưa về kích thước $32\times32$ bằng nội suy \texttt{INTER\_AREA}.
+    \item Tùy chọn áp dụng CLAHE (\texttt{clipLimit} bằng 2,0; lưới $4\times4$) (Zuiderveld, 1994).
+    \item Khi dùng vector pixel làm đặc trưng, giá trị điểm ảnh được chia cho 255.
+\end{itemize}
+
+Lý do và đánh đổi của các quyết định này:
+
+\begin{itemize}
+    \item \textbf{Chuyển sang ảnh xám:} giảm số chiều (3 kênh còn 1 kênh) và giảm ảnh hưởng của sai lệch màu giữa các điều kiện chụp. Đánh đổi là mất thông tin màu (đỏ, xanh, vàng) vốn là dấu hiệu đặc trưng của biển báo, đây là một hạn chế của giải pháp (mục~\ref{sec:han-che}).
+    \item \textbf{Cắt theo ROI:} loại bỏ phần nền xung quanh biển. Đánh đổi là khi triển khai thực tế phải có thêm bước phát hiện biển để có ROI.
+    \item \textbf{Đưa về $32\times32$:} mọi ảnh có cùng độ dài vector và chi phí tính toán của K-NN ở mức chấp nhận được. Đánh đổi là biển nhỏ (25--30 điểm ảnh) mất thêm chi tiết khi thay đổi kích thước.
+    \item \textbf{Không tăng cường dữ liệu:} phép lật ngang có thể làm đổi nhãn của các biển đối xứng gương (ví dụ rẽ trái và rẽ phải) nên nhóm không áp dụng.
+\end{itemize}
+
+\section{Biểu diễn và trích xuất đặc trưng}
+
+\begin{itemize}
+    \item \textbf{Pixel (baseline):} vector 1\,024 chiều ($32\times32$) đã chia cho 255.
+    \item \textbf{HOG} (Dalal và Triggs, 2005): 9 hướng, ô $4\times4$ điểm ảnh, khối $2\times2$ ô, chuẩn hóa L2-Hys, cho vector $7\times7\times36=1\,764$ chiều.
+    \item \textbf{PCA} (Pedregosa và cs., 2011): giảm xuống 100 chiều, áp dụng trên cả pixel (kí hiệu \texttt{pca\_pixel}) và HOG (\texttt{pca\_hog}). PCA \textbf{chỉ được fit trên tập huấn luyện}, sau đó biến đổi tập kiểm định và tập kiểm thử.
+\end{itemize}
+
+\section{Chia dữ liệu và hạn chế rò rỉ dữ liệu}
+\label{sec:chia-du-lieu}
+
+\begin{itemize}
+    \item \textbf{Tập kiểm thử (Test):} dùng đúng tệp \texttt{Test.csv} (12\,630 ảnh) do bộ dữ liệu cung cấp, gồm các track khác với Train; chỉ dùng để đánh giá cuối.
+    \item \textbf{Tập kiểm định (validation):} lấy từ Train bằng \texttt{StratifiedGroupKFold} (5 phần, \texttt{shuffle=True}, \texttt{random\_state}=42), lấy phần đầu làm validation và \textbf{nhóm theo track}. Kết quả: 31\,349 ảnh để huấn luyện (fit), 7\,860 ảnh để kiểm định, số track chung giữa hai tập bằng 0 (được in trong nhật ký chạy: \texttt{track chung fit/val = 0}).
+    \item Mọi lựa chọn (CLAHE, $k$, metric, \texttt{max\_depth}, \texttt{criterion}) được thực hiện trên tập kiểm định. Sau đó mô hình cuối được huấn luyện lại trên toàn bộ Train và đánh giá một lần trên Test.
+    \item Bước học tham số từ dữ liệu duy nhất là PCA, chỉ fit trên tập huấn luyện (hoặc toàn bộ Train khi huấn luyện mô hình cuối).
+\end{itemize}
+
+\section{Thuật toán và tham số}
+
+Các thuật toán và tham số nhóm sử dụng được tóm tắt ở Bảng~\ref{tab:thuat-toan}.
+
+\begin{table}[H]
+\centering
+\caption{Thuật toán, tham số khảo sát và lý do lựa chọn}
+\label{tab:thuat-toan}
+\begin{tabular}{|p{2.6cm}|p{5.9cm}|p{6.5cm}|}
+\hline
+\textbf{Thuật toán} & \textbf{Tham số khảo sát} & \textbf{Lý do lựa chọn} \\
+\hline
+K-NN & Bỏ phiếu đa số; $k \in \{1,3,5,7,9\}$; metric euclidean hoặc manhattan & Không giả định phân phối dữ liệu; phù hợp để đánh giá chất lượng biểu diễn đặc trưng. \\
+\hline
+Cây quyết định & \texttt{max\_depth} bằng 10, 20 hoặc không giới hạn; \texttt{criterion} là gini hoặc entropy; \texttt{random\_state}=42 & Dễ diễn giải; huấn luyện một lần, dự đoán nhanh, đối lập với K-NN về chi phí huấn luyện và dự đoán. \\
+\hline
+Baseline & Vector pixel $32\times32$, K-NN với $k=5$, metric euclidean, không CLAHE & Phương án đơn giản, làm mốc so sánh cho mọi phương án khác. \\
+\hline
+\end{tabular}
+\Nguon{Nhóm tổng hợp}
+\end{table}
+
+Quy tắc chọn: với từng cặp (thuật toán, biểu diễn), cấu hình có Macro-F1 cao nhất trên tập kiểm định được chọn. Việc dùng hay không dùng CLAHE được chọn theo Macro-F1 trung bình trên tập kiểm định cho từng loại biểu diễn.
+
+\section{Cấu trúc mã nguồn và chức năng}
+
+Mã nguồn gồm bốn tệp Python ở thư mục gốc của repository (Bảng~\ref{tab:ma-nguon}), không dùng notebook.
+
+\begin{table}[H]
+\centering
+\caption{Cấu trúc mã nguồn}
+\label{tab:ma-nguon}
+\begin{tabular}{|p{3.6cm}|p{11.4cm}|}
+\hline
+\textbf{Tệp} & \textbf{Chức năng} \\
+\hline
+\texttt{common.py} & Hàm dùng chung: đọc ảnh (cắt ROI, đổi kích thước, CLAHE), đặc trưng pixel và HOG (chạy song song bằng \texttt{joblib}), tên 43 lớp, hàm \texttt{track\_id}, tham số dòng lệnh. \\
+\hline
+\texttt{load\_data.py} & Kiểm tra dữ liệu (số ảnh còn thiếu trên đĩa) và đọc thử một phần ảnh. \\
+\hline
+\texttt{01\_eda.py} & Thống kê (kích thước, dữ liệu thiếu, trùng lặp, mất cân bằng, số track); vẽ phân phối lớp, kích thước, độ sáng và lưới ảnh mẫu. \\
+\hline
+\texttt{02\_experiments.py} & Baseline, so sánh CLAHE, quét siêu tham số trên tập kiểm định, đánh giá cuối trên Test, phân tích lỗi, xuất bảng và hình. \\
+\hline
+\end{tabular}
+\Nguon{Nhóm tổng hợp}
+\end{table}
+
+Hai đoạn mã quan trọng nhất liên quan đến việc tránh rò rỉ dữ liệu là chia theo track và fit PCA chỉ trên tập huấn luyện:
+
+{\footnotesize
+\begin{verbatim}
+# Split by TRACK: frames of one physical sign never appear in both fit and val
+sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=SEED)
+fit_idx, val_idx = next(sgkf.split(np.zeros(len(tr)), ytr, groups))
+
+# PCA is fitted on the fit rows only, then applied to val/test
+p = PCA(n_components=100, random_state=SEED).fit(Xfit)
+Xfit, others = p.transform(Xfit), [p.transform(o) for o in others]
+\end{verbatim}
+}
+
+Để quét giá trị $k$ nhanh hơn, hàm \texttt{knn\_sweep} tìm 9 láng giềng gần nhất một lần cho mỗi metric rồi bỏ phiếu đa số cho từng $k \in \{1,3,5,7,9\}$; kết quả tương đương K-NN thông thường. Do đó cột thời gian dự đoán trong bảng kiểm định chỉ là thời gian tìm láng giềng, còn bảng Test dùng hàm \texttt{predict} trực tiếp.
+
+\section{Khả năng tái tạo}
+
+Mọi bước ngẫu nhiên dùng \texttt{SEED}=42 (chia dữ liệu, PCA, Cây quyết định, lấy mẫu). Mã nguồn, hướng dẫn cài đặt và chạy được ghi trong tệp \texttt{README.md} của repository, thư viện cần thiết ghi trong \texttt{requirements.txt}. Nhóm đã chạy đầy đủ toàn bộ quy trình hai lần độc lập; Accuracy và Macro-F1 của cả chín phương án trên Test trùng khớp hoàn toàn, chỉ có cột thời gian chạy khác nhau do tốc độ máy. Nhật ký chạy lưu tại \texttt{results/run\_log\_eda.txt} và \texttt{results/run\_log\_experiments.txt}.

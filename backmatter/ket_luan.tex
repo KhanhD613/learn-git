@@ -1,0 +1,21 @@
+\UnnumberedChapter{KẾT LUẬN}
+
+\textbf{Tổng kết.} Nhóm đã xây dựng quy trình học máy đầy đủ cho bài toán phân loại 43 loại biển báo giao thông trên bộ dữ liệu GTSRB: khám phá dữ liệu, tiền xử lý, so sánh ba cách biểu diễn (pixel, HOG, PCA) và hai thuật toán (K-NN, Cây quyết định), quét siêu tham số trên tập kiểm định chia theo track và đánh giá cuối trên tập Test. Các kết quả chính:
+
+\begin{itemize}
+    \item Mô hình tốt nhất là \textbf{K-NN kết hợp HOG} ($k=9$, metric euclidean) với Accuracy \textbf{0.9082} và Macro-F1 \textbf{0.8840} trên tập Test, so với baseline (pixel kết hợp K-NN) là 0.5253 và 0.4682.
+    \item Biểu diễn đặc trưng quan trọng hơn việc chọn thuật toán: HOG vượt pixel ở cả K-NN và Cây quyết định.
+    \item PCA (100 chiều) giữ gần như nguyên độ chính xác của HOG (0.9051) và rút ngắn thời gian dự đoán hơn một nửa.
+    \item Lỗi tập trung ở các biển giới hạn tốc độ (khác nhau ở chữ số) và các biển cảnh báo hình tam giác có hình minh họa nhỏ, và nặng hơn với biển có kích thước ảnh nhỏ.
+    \item Quy trình tái tạo được: hai lần chạy đầy đủ độc lập cho cùng Accuracy và Macro-F1 ở cả chín phương án.
+\end{itemize}
+
+\textbf{Hướng phát triển.}
+
+\begin{itemize}
+    \item Dùng thông tin màu (đặc trưng HSV, histogram màu) kết hợp HOG để phân biệt các biển cảnh báo hình tam giác.
+    \item Tăng độ phân giải cho biển nhỏ hoặc trích đặc trưng riêng cho vùng chữ số của biển giới hạn tốc độ.
+    \item Dùng đánh giá chéo theo track với nhiều phần để có khoảng tin cậy, và chọn mô hình chỉ theo tập kiểm định.
+    \item Dùng chỉ mục láng giềng gần đúng (KD-tree, băm) để giảm thời gian dự đoán của K-NN.
+    \item Phần mở rộng nếu có thêm thời gian: thử mạng nơ-ron tích chập hoặc mô hình huấn luyện sẵn để so sánh với các thuật toán đã học, kèm bộ phát hiện biển để không phụ thuộc vào ROI; xây dựng ứng dụng minh họa nhận ảnh và trả về nhãn dự đoán cùng độ tin cậy.
+\end{itemize}
