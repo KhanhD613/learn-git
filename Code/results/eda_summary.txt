@@ -1,0 +1,15 @@
+Train: (39209, 8), Test: (12630, 8), Meta: (43, 5)
+Số lớp train=43, test=43
+Thiếu dữ liệu train: 0, test: 0
+Trùng đường dẫn train: 0
+Lớp ít nhất: 0 (210), nhiều nhất: 2 (2250), tỉ lệ imbalance = 10.7
+Số track (biển vật lý) trong train: 1307 -> ~30 ảnh/track
+              Width        Height
+count  39209.000000  39209.000000
+mean      50.835880     50.328930
+std       24.306933     23.115423
+min       25.000000     25.000000
+25%       35.000000     35.000000
+50%       43.000000     43.000000
+75%       58.000000     58.000000
+max      243.000000    225.000000

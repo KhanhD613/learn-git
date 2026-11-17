@@ -1,0 +1,10 @@
+name,algo,rep,clahe,params,accuracy,macro_precision,macro_recall,macro_f1,fit_s,pred_s
+BASELINE pixel+KNN(k=5),knn,pixel,False,{'n_neighbors': 5},0.5252573238321457,0.507946477203454,0.451383393635163,0.4681885497464004,0.08,68.09
+dt+hog (tuned),dt,hog,False,"{'max_depth': None, 'criterion': 'gini'}",0.7595407759303247,0.7006657668901184,0.68329291884575,0.6887336318209218,388.59,0.37
+dt+pca_hog (tuned),dt,pca_hog,False,"{'max_depth': 20, 'criterion': 'entropy'}",0.7166270783847981,0.6494590994986184,0.631509694701808,0.634531571279488,79.22,0.01
+dt+pca_pixel (tuned),dt,pca_pixel,True,"{'max_depth': 20, 'criterion': 'entropy'}",0.5792557403008709,0.49241842070063224,0.4841539281693478,0.48676675890961546,123.28,0.01
+dt+pixel (tuned),dt,pixel,True,"{'max_depth': 20, 'criterion': 'entropy'}",0.71298495645289,0.6463930171027554,0.6332150752292309,0.6355778233513846,198.11,0.06
+knn+hog (tuned),knn,hog,False,"{'n_neighbors': 9, 'metric': 'euclidean'}",0.9081551860649247,0.9012561427784674,0.8778182318561489,0.8839777975322131,0.14,147.05
+knn+pca_hog (tuned),knn,pca_hog,False,"{'n_neighbors': 7, 'metric': 'manhattan'}",0.9050673000791766,0.8990944096428178,0.8753763333902362,0.8816568106795346,0.01,62.88
+knn+pca_pixel (tuned),knn,pca_pixel,True,"{'n_neighbors': 1, 'metric': 'manhattan'}",0.7682501979414094,0.7534247620491421,0.7214562803223066,0.7294481724618024,0.01,52.25
+knn+pixel (tuned),knn,pixel,True,"{'n_neighbors': 1, 'metric': 'euclidean'}",0.7051464766429137,0.7018359178684653,0.6552433444079045,0.6666770054160985,0.08,66.11

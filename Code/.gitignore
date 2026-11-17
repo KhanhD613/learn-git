@@ -1,0 +1,14 @@
+# Bỏ qua thư mục dữ liệu lớn
+Train/
+Test/
+Meta/
+
+# Chỉ bỏ qua các file dữ liệu .csv ở thư mục gốc (giữ lại các file .csv bên trong thư mục results/)
+/Train.csv
+/Test.csv
+/Meta.csv
+
+# Bỏ qua các file cấu hình và file tạm
+.vscode/
+__pycache__/
+*.pyc

@@ -1,0 +1,9 @@
+stage,algo,rep,clahe,params,accuracy,macro_precision,macro_recall,macro_f1,fit_s,pred_s
+grid_val,dt,hog,False,"{'max_depth': None, 'criterion': 'gini'}",0.7793893129770992,0.7283757292768679,0.7113002716491089,0.7128414795174581,338.82,0.06
+grid_val,dt,pca_hog,False,"{'max_depth': 20, 'criterion': 'entropy'}",0.7255725190839695,0.6823901065093394,0.6529468722491978,0.6630183393630122,59.04,0.01
+grid_val,dt,pca_pixel,True,"{'max_depth': 20, 'criterion': 'entropy'}",0.5823155216284988,0.4861021335139641,0.477619213258748,0.4767810909142547,100.02,0.01
+grid_val,dt,pixel,True,"{'max_depth': 20, 'criterion': 'entropy'}",0.7203562340966921,0.6669650160072925,0.6492573662341105,0.64768642563255,138.36,0.02
+grid_val,knn,hog,False,"{'n_neighbors': 9, 'metric': 'euclidean'}",0.9283715012722646,0.934228591889495,0.9077565049076678,0.9102926010011246,0.0,56.64
+grid_val,knn,pca_hog,False,"{'n_neighbors': 7, 'metric': 'manhattan'}",0.9165394402035624,0.9234638664725954,0.8886763968159316,0.8972280331167525,0.0,28.54
+grid_val,knn,pca_pixel,True,"{'n_neighbors': 1, 'metric': 'manhattan'}",0.7632315521628499,0.7522091432928567,0.711127651418349,0.7160098984164238,0.0,49.84
+grid_val,knn,pixel,True,"{'n_neighbors': 1, 'metric': 'euclidean'}",0.6919847328244275,0.6781818600856827,0.6144804119222725,0.617144031224836,0.0,33.66

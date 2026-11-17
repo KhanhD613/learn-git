@@ -1,0 +1,11 @@
+count,true,pred
+72,1-Speed limit 30,5-Speed limit 80
+59,7-Speed limit 100,8-Speed limit 120
+55,3-Speed limit 60,5-Speed limit 80
+34,2-Speed limit 50,5-Speed limit 80
+31,30-Beware ice/snow,11-Right-of-way at intersection
+31,25-Road work,24-Road narrows on right
+29,23-Slippery road,31-Wild animals crossing
+29,8-Speed limit 120,7-Speed limit 100
+28,8-Speed limit 120,5-Speed limit 80
+24,29-Bicycles crossing,21-Double curve
